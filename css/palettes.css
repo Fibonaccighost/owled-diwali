@@ -1,0 +1,12 @@
+/* Every colour and font on the site lives here, taken from owledmedia.com.
+   Mango Grotesque is OWLED's headline face. Anton is the closest free match. If you hold a web licence,
+   add an @font-face for it and put 'Mango Grotesque' first in --display.
+   The diya clay, the flame and the toran leaves stay natural. */
+:root {
+  --night: #000000; --night-warm: #170408; --night-2: #1d1d1d; --night-3: #2f2f2f; --night-glow: #4a0916; --veil: #000000;
+  --marigold: #f4bd45; --gold: #f4bd45; --rani: #cf1134; --cream: #fff3e2; --ink: #000000; --tint: #aa94ff; --orange: #ff8e3c; --rose: #df5e76;
+  --owl-a: #cf1134; --owl-b: #7d0a20; --owl-ear: #9c0d28; --owl-wing: #6a0818; --owl-belly-a: #fff3e2; --owl-belly-b: #f4bd45; --owl-mark: #c9861f;
+  --stall-reels: #e0173f; --stall-films: #f4bd45; --stall-campaigns: #ff8e3c; --stall-creators: #aa94ff; --stall-design: #df5e76;
+  --fw: 42/90 348/85 26/100 252/100 345/65;
+  --display: 'Anton', Impact, 'Arial Narrow', sans-serif; --sans: 'Geist', system-ui, sans-serif;
+}
