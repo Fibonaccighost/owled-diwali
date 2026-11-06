@@ -3,12 +3,14 @@
    everything on screen is worked out from one number: how far down the lane's scroll you are (M.t). */
 (() => {
 'use strict';
-const { S, guest, fill, fmt, play, track, store, reduced, clamp, lerp, coarse } = window.OW;
+const { S, guest, fill, play, track, store, reduced, clamp, lerp, coarse } = window.OW;
 const A = window.OWArt, C = S.copy;
 const $ = s => document.querySelector(s);
 const WORK = window.OWLED_WORK || [];
 const STALLS = S.stalls.filter(s => WORK.some(w => w.cat === s.id));
-const ART = { reels: 'rangoli', films: 'talkies', campaigns: 'patakhe', creators: 'chaupal', design: 'dukaan' };
+const ART = { hooc: 'rangoli', snoball: 'chaupal', films: 'talkies', frontseat: 'dukaan', origin: 'patakhe' };
+const LOCAL = /^(localhost|127\.|\[::1\])/.test(location.hostname);
+const viewsOf = w => ((S.viewsApproved || LOCAL) && w.views) || '';
 const listOf = id => WORK.filter(w => w.cat === id);
 const brandsOf = id => [...new Set(listOf(id).map(w => w.client))];
 const range = n => Array.from({ length: n }, (_, i) => i);
@@ -43,22 +45,23 @@ window.addEventListener('ow:named', () => { hunt = loadHunt(); words(); renderHu
 /* ── a work card ── */
 function cover(w) {
   const c = document.createElement('div'); c.className = 'cov';
-  if (w.thumb) { const i = document.createElement('img'); i.src = w.thumb; i.alt = ''; i.decoding = 'async'; c.appendChild(i); }
+  if (w.thumb) {
+    const i = document.createElement('img'); i.src = w.thumb; i.alt = ''; i.decoding = 'async'; c.appendChild(i);
+    if (w.video) { const p = document.createElement('span'); p.className = 'play'; p.textContent = '▶'; c.appendChild(p); }
+  }
   else {
     const g = document.createElement('div'); g.className = 'cover-gen'; g.style.setProperty('--c', (STALLS.find(s => s.id === w.cat) || {}).color || 'var(--tint)');
     const t = document.createElement('span'); t.className = 't'; t.textContent = w.title;
-    const p = document.createElement('span'); p.className = 'play'; p.textContent = w.cat === 'design' ? '✦' : '▶';
-    g.append(p, t); c.appendChild(g);
+    g.append(t); c.appendChild(g);
   }
-  const pf = document.createElement('span'); pf.className = 'pf'; pf.textContent = w.platform; c.appendChild(pf);
   return c;
 }
 function card(w, list) {
   const b = document.createElement('button'); b.type = 'button'; b.className = 'wk';
-  b.setAttribute('aria-label', `${w.title}, ${w.client}${w.views ? ', ' + fmt(w.views) + ' views' : ''}`);
+  b.setAttribute('aria-label', [w.title, w.client, viewsOf(w)].filter(Boolean).join(', '));
   const m = document.createElement('div'); m.className = 'meta';
   const t = document.createElement('b'); t.textContent = w.client;
-  const row = document.createElement('span'); row.textContent = [w.month, w.views ? `${fmt(w.views)} views` : ''].filter(Boolean).join(', ');
+  const row = document.createElement('span'); row.textContent = [w.thumb && w.title !== w.client ? w.title : '', viewsOf(w)].filter(Boolean).join(' · ');
   m.append(t, row); b.append(cover(w), m);
   b.addEventListener('click', () => openModal(list, list.indexOf(w)));
   return b;
@@ -72,7 +75,7 @@ document.body.insertAdjacentHTML('afterbegin', A.SHOP_GLOW);
 
 const shops = STALLS.map((s, i) => {
   const b = document.createElement('button'); b.type = 'button'; b.className = 'shop'; b.style.setProperty('--c', s.color);
-  b.setAttribute('aria-label', `Go to ${s.name}: ${s.sub}. ${listOf(s.id).length} pieces.`);
+  b.setAttribute('aria-label', `Go to ${s.name}. ${listOf(s.id).length} pieces.`);
   b.innerHTML = A.frame(s.name, brandsOf(s.id), A.SHOPS[ART[s.id]]());
   b.addEventListener('click', () => goTo(i));
 
@@ -81,7 +84,7 @@ const shops = STALLS.map((s, i) => {
   el.innerHTML = '<div class="shop-aw" aria-hidden="true"></div><div class="shop-prog" aria-hidden="true"><i></i></div><button class="shop-x" type="button" aria-label="Skip to the next stall">×</button>' +
     '<div class="shop-wrap"><div class="shop-body"><h2></h2><p class="shop-sub"></p><div class="keeper"><span class="keeper-owl" aria-hidden="true"></span><p class="keeper-say"></p></div><div class="grid"></div><p class="shop-next"></p></div></div>';
   el.querySelector('h2').textContent = s.name;
-  el.querySelector('.shop-sub').textContent = `${s.sub}, for ${brandsOf(s.id).join(', ')}.`;
+  el.querySelector('.shop-sub').textContent = `Work for ${brandsOf(s.id).join(', ')}.`;
   el.querySelector('.keeper-owl').innerHTML = A.KEEPER.replace(/kp(?=[BG])/g, `kp${i}`);
   el.querySelector('.shop-next').textContent = next ? fill(C.nextStall).replace('{stall}', next.name) : C.nextNote;
   const grid = el.querySelector('.grid'); grid.classList.toggle('wide', list.every(w => !w.tall)); grid.append(...list.map(w => card(w, list)));
@@ -302,19 +305,37 @@ addEventListener('keyup', e => { if (e.key === 'ArrowRight' || e.key === 'ArrowL
 /* ── the hud ── */
 function renderHud() {
   hudBtns.forEach((b, i) => b.classList.toggle('seen', hunt.seen.includes(STALLS[i].id)));
-  const n = hunt.seen.length;
+  const n = hunt.seen.filter(id => STALLS.some(s => s.id === id)).length;
   $('#huntMsg').textContent = hunt.found ? fill(C.huntFound) : n ? fill(C.huntSeen).replace('{n}', n).replace('{total}', STALLS.length) : C.huntStart;
 }
 $('#walkHint').textContent = coarse ? C.hintTouch : C.hintMouse;
 
 /* ── the work viewer ── */
 const modal = $('#modal'); let mList = [], mI = 0, lastFocus = null;
+// a video keeps playing after it leaves the page unless it is stopped and emptied
+function stopVideo() {
+  const v = $('#mCover video'); if (!v) return;
+  v.pause(); v.replaceChildren(); v.load();
+}
+function videoEl(w) {
+  const v = document.createElement('video');
+  v.controls = true; v.playsInline = true; v.preload = 'metadata'; v.poster = w.thumb;
+  [['webm', 'video/webm; codecs="vp9,opus"'], ['mp4', 'video/mp4']].forEach(([ext, type]) => {
+    const src = document.createElement('source'); src.src = `${w.video}.${ext}`; src.type = type; v.appendChild(src);
+  });
+  return v;
+}
 function showWork() {
   const w = mList[mI], s = STALLS.find(x => x.id === w.cat) || {};
-  const cv = $('#mCover'); cv.replaceChildren(cover(w)); cv.firstChild.style.height = '100%';
+  stopVideo();
+  const cv = $('#mCover'), v = w.video ? videoEl(w) : null;
+  cv.replaceChildren(v || cover(w)); if (!v) cv.firstChild.style.height = '100%';
+  cv.parentElement.classList.toggle('wide', !!v && !w.tall);
+  cv.classList.toggle('tall', !!w.thumb && !!w.tall);
+  if (v && !reduced) v.play().catch(() => {});   // opened by a tap, so sound is allowed. if not, the controls are there
   $('#mKick').textContent = s.name || '';
   $('#mTitle').textContent = w.title;
-  $('#mMeta').textContent = [w.client, w.platform, w.month, w.views ? fmt(w.views) + ' views' : ''].filter(Boolean).join(', ');
+  $('#mMeta').textContent = [w.title !== w.client ? w.client : '', viewsOf(w)].filter(Boolean).join(', ');
   $('#mBlurb').textContent = w.blurb || '';
   const a = $('#mWatch'); a.hidden = !w.link; if (w.link) a.href = w.link;
   const multi = mList.length > 1; $('#mPrev').hidden = !multi; $('#mNext').hidden = !multi;
@@ -323,13 +344,13 @@ function openModal(list, i) {
   mList = list; mI = i; lastFocus = document.activeElement; showWork();
   modal.hidden = false; document.body.style.overflow = 'hidden'; $('#mX').focus({ preventScroll: true }); play('open'); track('work', list[i].id);
 }
-function closeModal() { modal.hidden = true; document.body.style.overflow = ''; if (lastFocus) lastFocus.focus({ preventScroll: true }); }
+function closeModal() { stopVideo(); modal.hidden = true; document.body.style.overflow = ''; if (lastFocus) lastFocus.focus({ preventScroll: true }); }
 const stepM = d => { mI = (mI + d + mList.length) % mList.length; showWork(); play('tap'); };
 $('#mX').addEventListener('click', closeModal);
 $('#mPrev').addEventListener('click', () => stepM(-1));
 $('#mNext').addEventListener('click', () => stepM(1));
 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-let sx = null; modal.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+let sx = null; modal.addEventListener('touchstart', e => { sx = e.target.closest('video') ? null : e.touches[0].clientX; }, { passive: true });   // swiping on a video scrubs it
 modal.addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50 && mList.length > 1) stepM(dx < 0 ? 1 : -1); sx = null; });
 addEventListener('keydown', e => {
   if (modal.hidden) return;

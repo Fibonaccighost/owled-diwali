@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────
    OWLED MEDIA · Diwali 2026 — everything you'd want to edit lives in data/.
    site.js    → brand, copy, the five numbers, stall categories, contact
-   work.js    → the portfolio (25–30 pieces)
+   work.js    → the portfolio
    clients.js → optional per-client notes + "made for you" picks
    ───────────────────────────────────────────────────────────── */
 window.OWLED = {
@@ -46,21 +46,25 @@ window.OWLED = {
 
   // each diya, once lit, reveals one number. keep it to five.
   stats: [
-    { value: 48000000, label: 'views',            suffix: '+', fmt: 'short' },
-    { value: 30,       label: 'pieces shipped',    suffix: '',  fmt: 'int' },
-    { value: 12,       label: 'brands',            suffix: '',  fmt: 'int' },
-    { value: 6.8,      label: 'avg. engagement',   suffix: '%', fmt: 'dec' },
-    { value: 7,        label: 'months of diwali-level effort', suffix: '', fmt: 'int' },
+    { value: 500000000, label: 'Views',                   suffix: '+', fmt: 'short' },
+    { value: 1100,      label: 'Videos Produced Monthly', suffix: '',  fmt: 'int' },
+    { value: 25,        label: 'Brands',                  suffix: '+', fmt: 'int' },
+    { value: 200,       label: 'Creative Minds',          suffix: '+', fmt: 'int' },
+    { value: 5,         label: 'Divisions',               suffix: '',  fmt: 'int' },
   ],
 
   // stall order = the order they appear in the mela. `id` must match work.js `cat`.
   stalls: [
-    { id: 'reels',     name: 'reels ki rangoli',   sub: 'short-form that stopped the scroll', color: 'var(--stall-reels)', icon: 'rangoli' },
-    { id: 'films',     name: 'brand film talkies', sub: 'long-form, big screen energy',       color: 'var(--stall-films)', icon: 'reel' },
-    { id: 'campaigns', name: 'campaign patakhe',   sub: 'launches that went boom',            color: 'var(--stall-campaigns)', icon: 'rocket' },
-    { id: 'creators',  name: 'creator chaupal',    sub: 'influencer collabs that clicked',    color: 'var(--stall-creators)', icon: 'chat' },
-    { id: 'design',    name: 'design ki dukaan',   sub: 'posts, carousels, key art',          color: 'var(--stall-design)', icon: 'brush' },
+    { id: 'hooc',      name: 'HOOC',        color: 'var(--stall-reels)' },
+    { id: 'snoball',   name: 'Snoball',     color: 'var(--stall-creators)' },
+    { id: 'films',     name: 'OWLED Films', color: 'var(--stall-films)' },
+    { id: 'frontseat', name: 'Frontseat',   color: 'var(--stall-design)' },
+    { id: 'origin',    name: 'Origin',      color: 'var(--stall-campaigns)' },
   ],
+
+  // the sheet says campaign figures need approval before external publication.
+  // while this is false, work.js view counts show on localhost only. They are still readable in the source.
+  viewsApproved: false,
 
   contact: {
     email: 'bd@owledmedia.com',

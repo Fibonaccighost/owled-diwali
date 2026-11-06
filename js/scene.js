@@ -110,7 +110,7 @@ function drawNight(now) {
   const flick = .9 + .06 * Math.sin(now * 23) + .05 * Math.sin(now * 37 + 1.3);
   const m = Math.min(W, H), lights = [{ x: src.x, y: src.y - 40, r: m * .34 * flick, a: .95 }];
   if (flame.on) lights.push({ x: flame.x, y: flame.y, r: m * .3 * flick, a: .95 });
-  slots.forEach(s => { if (s.glow > .01) lights.push({ x: s.x, y: s.y - 20, r: m * (.18 + .14 * s.glow) * flick, a: .9 * s.glow }); });
+  slots.forEach(s => { if (s.glow > .01) lights.push({ x: s.x, y: s.y - 20, r: m * (.18 + .14 * s.glow) * flick, a: .9 * s.glow }, { x: s.x, y: s.y - 100, r: 110, a: .85 * s.glow }); });   // the second one keeps its number readable on small screens
   for (const L of lights) {
     const g = nctx.createRadialGradient(L.x * k, L.y * k, 0, L.x * k, L.y * k, L.r * k);
     g.addColorStop(0, `rgba(0,0,0,${L.a})`); g.addColorStop(.5, `rgba(0,0,0,${L.a * .6})`); g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -146,21 +146,30 @@ function say(text) {
 function progressCap() {
   if (ST.lit === 0) say(coarse ? S.copy.sceneHintTouch : S.copy.sceneHint);
   else if (ST.lit < 5) say(`${ST.lit} of 5 lit · ${['keep going', 'nice', 'more light', 'one more!'][ST.lit - 1]}`);
+  else { say('all 5 lit'); autoBtn.hidden = true; }
 }
 
 /* ── lighting a diya ── */
-function countUp(el, st) {
+function countUp(el, st, done) {
   const t0 = performance.now(), dur = reduced ? 1 : 1100;
   const tick = now => { const k = clamp((now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-    el.textContent = fmt(st.value * e, st.fmt) + (k >= 1 ? st.suffix : ''); if (k < 1) requestAnimationFrame(tick); };
+    el.textContent = fmt(st.value * e, st.fmt) + (k >= 1 ? st.suffix : ''); if (k < 1) requestAnimationFrame(tick); else if (done) done(); };
   requestAnimationFrame(tick);
+}
+// the number has landed: a small pop and a few sparks off it
+function land(s) {
+  if (!s.lit) return;
+  s.el.classList.add('landed');
+  if (reduced) return;
+  const r = s.num.getBoundingClientRect(), sr = scene.getBoundingClientRect();
+  sparks(r.left - sr.left + r.width / 2, r.top - sr.top + r.height / 2, 14);
 }
 function light(s) {
   if (s.lit) return; s.lit = true; ST.lit++; ST.idle = 0;
-  s.el.classList.add('lit'); countUp(s.num, s.stat);
+  s.el.classList.add('lit'); countUp(s.num, s.stat, () => land(s));
   sparks(s.x, s.y - 10, reduced ? 10 : 46); play('light', ST.lit - 1); buzz(25);
   progressCap();
-  if (ST.lit === slots.length) setTimeout(reveal, 750);
+  if (ST.lit === slots.length) setTimeout(reveal, reduced ? 1200 : 2400);   // time to read all five together
 }
 // tap a diya (or "light them for me"): the flame flies over from the owl's lamp on its own
 function fly(s) {
@@ -238,7 +247,7 @@ window.OWScene = {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => {
       document.body.classList.add('locked'); document.body.classList.remove('revealed'); owl.classList.remove('happy');
-      slots.forEach(s => { s.lit = false; s.glow = 0; s.el.classList.remove('lit'); s.num.textContent = '0'; });
+      slots.forEach(s => { s.lit = false; s.glow = 0; s.el.classList.remove('lit', 'landed'); s.num.textContent = '0'; });
       ST.lit = 0; ST.dark = 1; ST.idle = 0; ST.ph = 'play'; lastCap = ''; progressCap(); autoBtn.hidden = true;
       setTimeout(measure, 1100);   // the diyas slide back up first
     }, 500);

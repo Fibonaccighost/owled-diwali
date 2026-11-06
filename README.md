@@ -1,6 +1,6 @@
 # Owled Media · Diwali 2026
 
-A personalised Diwali wish for Owled Media's clients. The owl (Lakshmi's vahana, and our name) holds a lit diya. The guest carries its flame to five diyas, and each one reveals one of our numbers. Fireworks go off, then the guest walks into the **Owled mela**: five stalls holding 30 pieces of our work.
+A personalised Diwali wish for Owled Media's clients. The owl (Lakshmi's vahana, and our name) holds a lit diya. The guest carries its flame to five diyas, and each one reveals one of our numbers. Fireworks go off, then the guest walks into the **Owled mela**: five stalls holding our work, one per division.
 
 No framework and no build step: plain HTML, CSS and JavaScript, and all sound is synthesised in the browser.
 
